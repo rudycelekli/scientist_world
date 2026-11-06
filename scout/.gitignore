@@ -1,0 +1,10 @@
+# Pipeline data (the default --data-dir when the scripts are run from here)
+data/
+
+# Working directory of the analysis agent, created by analyze_papers.py
+analyst_runtime/
+
+# Caches
+__pycache__/
+*.py[cod]
+.pytest_cache/

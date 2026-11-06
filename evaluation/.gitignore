@@ -1,0 +1,6 @@
+# Local configuration: copied from evaluation/config.example.yaml, may hold
+# API keys in profile blocks.
+evaluation/config.yaml
+
+# Outputs of the dataset builder (parquet, judge checkpoints).
+dataset_builder/out/

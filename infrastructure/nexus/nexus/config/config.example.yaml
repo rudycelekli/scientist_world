@@ -1,0 +1,42 @@
+# Nexus configuration.
+#
+# Copy this file to one of these locations and edit it:
+#   $NEXUS_DIR/config.yaml     (checked first)
+#   nexus/config/config.yaml   (next to this file, gitignored)
+# A key that is missing takes the default shown here.
+
+hive:
+  # REQUIRED. Base URL of the Hive dashboard that runs the jobs, for example
+  # "http://<hive-host>:38581". When empty, the HIVE_URL environment variable
+  # is used instead. The daemon refuses to start without one of the two.
+  url: ""
+
+daemon:
+  # TCP port of the REST API and the web dashboard.
+  port: 39000
+  # Bind address. The API has no authentication: any client that can reach
+  # this port can register projects and run commands on the pool. Keep the
+  # loopback default unless agents or orchestrators on other hosts must reach
+  # the daemon. In that case use "0.0.0.0" (or one interface address) and
+  # restrict access with a firewall or a private network.
+  host: "127.0.0.1"
+
+monitor:
+  # Seconds between two Hive status polls of an active job.
+  status_poll_interval: 60
+  # Seconds a job runs between checkpoints. At a checkpoint the job is marked
+  # "awaiting_response" so that its logs can be reviewed and the job continued
+  # or cancelled. A project can override the value at registration.
+  checkpoint_interval: 1200
+  # Seconds to wait for that decision before the job is continued
+  # automatically. A project can override the value at registration.
+  checkpoint_timeout: 1800
+
+# Limits applied to a project that is registered without the matching field.
+project_defaults:
+  # Maximum number of GPUs the active jobs of a project may hold at once.
+  max_gpus: 4
+  # Per-job wall-clock timeout in seconds, passed on to Hive.
+  default_job_timeout: 3600
+  # Cumulative GPU-hour budget of a project. 0 means unlimited.
+  soft_gpu_budget_hours: 0

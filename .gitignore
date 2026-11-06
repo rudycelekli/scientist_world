@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# Local configuration and secrets
+.env
+config.yaml
+!config.example.yaml
+
+# Runtime state of the services
+.hive/
+.hive_*/
+.nexus/
+.nexus_*/
+.swarm/
+.swarm_*/
+.evaluation/
+.sciworld/
+
+# Outputs
+*.log
+*.sif
+core.*
+out/
+.DS_Store

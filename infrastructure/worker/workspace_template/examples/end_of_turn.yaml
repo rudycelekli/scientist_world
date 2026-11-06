@@ -1,0 +1,20 @@
+# Examples of what action.yaml should contain.
+# Edit action.yaml in your workspace root before your turn ends.
+
+# ── Submit a job to the GPU cluster ──
+# Before submitting, update run.sh with the commands you want to run.
+# The system always executes run.sh inside the compute container.
+# You will be reactivated when the job finishes.
+#
+# action: submit
+# gpus: 1
+# milestone: method_runs
+# notes: "First training run to verify the pipeline works end-to-end."
+
+# ── Signal that you are done ──
+# Use when you have reached a satisfactory milestone
+# or there is nothing more productive to do.
+#
+# action: done
+# milestone: core_claim
+# notes: "Reproduced the core claim. Environment packaged."

@@ -1,0 +1,131 @@
+{
+  "temperature": 1.2,
+  "analyzed_done": 21354,
+  "candidate_count": 8987,
+  "selected_count": 1500,
+  "category_count": 18,
+  "rows": [
+    {
+      "category": "Post-Training",
+      "before": 1643,
+      "after": 233
+    },
+    {
+      "category": "Efficiency",
+      "before": 1212,
+      "after": 181
+    },
+    {
+      "category": "Visual-Generation",
+      "before": 970,
+      "after": 150
+    },
+    {
+      "category": "Safety-Security",
+      "before": 696,
+      "after": 114
+    },
+    {
+      "category": "Detection",
+      "before": 683,
+      "after": 112
+    },
+    {
+      "category": "Evaluation",
+      "before": 481,
+      "after": 84
+    },
+    {
+      "category": "Vision-Restoration",
+      "before": 471,
+      "after": 82
+    },
+    {
+      "category": "Agent",
+      "before": 334,
+      "after": 62
+    },
+    {
+      "category": "Data-Retrieval",
+      "before": 330,
+      "after": 61
+    },
+    {
+      "category": "Scientific-Optimization",
+      "before": 326,
+      "after": 61
+    },
+    {
+      "category": "Architecture",
+      "before": 321,
+      "after": 60
+    },
+    {
+      "category": "Foundation-Model-Methods",
+      "before": 286,
+      "after": 54
+    },
+    {
+      "category": "Representation-Learning",
+      "before": 280,
+      "after": 54
+    },
+    {
+      "category": "Segmentation",
+      "before": 242,
+      "after": 47
+    },
+    {
+      "category": "Embodied-Control",
+      "before": 233,
+      "after": 46
+    },
+    {
+      "category": "Adaptation",
+      "before": 232,
+      "after": 46
+    },
+    {
+      "category": "Interpretability",
+      "before": 185,
+      "after": 38
+    },
+    {
+      "category": "Others",
+      "before": 62,
+      "after": 15
+    }
+  ],
+  "skip": {
+    "quality": 217,
+    "subscore": 5831,
+    "problem_novelty": 583,
+    "cost": 1574,
+    "type": 3056,
+    "repro": 1106
+  },
+  "top10_ids": [
+    "2507.02856",
+    "2511.21140",
+    "2504.10584",
+    "2602.14486",
+    "2505.10399",
+    "2510.06738",
+    "2506.07747",
+    "2507.07586",
+    "2504.05562",
+    "2512.24601"
+  ],
+  "bottom10_ids": [
+    "2509.17941",
+    "2510.05077",
+    "2503.16616",
+    "2505.14100",
+    "2507.11055",
+    "2508.18067",
+    "2505.10063",
+    "2506.04999",
+    "2502.12975",
+    "2503.19730"
+  ]
+}

@@ -1,0 +1,64 @@
+# Apptainer definition file for this environment.
+#
+# Build:  apptainer build container.sif container.def
+#
+# The container packages everything a scientist agent needs to work on
+# this paper's task. The agent's workspace is bind-mounted at /home/user
+# at runtime — it is NOT baked into the container.
+#
+# Security boundary:
+#   - test_labels and test_final_state.py NEVER enter the container
+#   - solution/ NEVER enters the container
+#   - Only training data and test features are included
+#
+# *** IMPORTANT ***
+# Python packages (torch, transformers, etc.) go in setup.sh, NOT here.
+# Only OS-level packages (apt-get) belong in %post.
+# Putting pip install in %post is the #1 cause of build failures.
+
+# --- CPU-only base (default) ---
+Bootstrap: docker
+From: python:3.11-slim
+
+# --- GPU / CUDA base (uncomment if your paper needs GPU) ---
+# Bootstrap: docker
+# From: nvidia/cuda:12.1.0-runtime-ubuntu22.04
+# Use 'runtime' (~1 GB) unless you need to compile CUDA code,
+# in which case use 'devel' (~4 GB).
+
+%files
+    # Data that the agent can see (training data + test features only)
+    # data/train.csv /home/user/data/train.csv
+    # data/test_features.csv /home/user/data/test_features.csv
+
+    # Baseline for the agent to beat
+    # baseline.py /home/user/baseline.py
+
+    # Example output format
+    # sample_output.csv /home/user/sample_output.csv
+
+    # Container self-test
+    # test_initial_state.py /home/user/test_initial_state.py
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        tmux nano vim-tiny less curl wget git && \
+    ln -sf /usr/bin/vim.tiny /usr/bin/vim && \
+    rm -rf /var/lib/apt/lists/*
+
+    # If using the CUDA base image (which lacks Python), uncomment:
+    # apt-get update && apt-get install -y --no-install-recommends \
+    #     python3 python3-pip python3-dev \
+    #     libomp-dev libgl1-mesa-glx libglib2.0-0 \
+    #     tmux nano vim-tiny less curl wget git && \
+    # ln -sf /usr/bin/vim.tiny /usr/bin/vim && \
+    # rm -rf /var/lib/apt/lists/*
+
+    # *** DO NOT put pip install here. Use setup.sh instead. ***
+
+    mkdir -p /home/user/data
+    chmod 755 /home/user
+
+%environment
+    export HOME=/home/user
+    export PYTHONUNBUFFERED=1

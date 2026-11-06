@@ -1,0 +1,43 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%labels
+    Author Reproducer
+    Description Reproducer agent container — dev tools for Claude Code CLI
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update && apt-get install -y --no-install-recommends \
+        curl wget git ca-certificates gnupg \
+        python3 python3-pip python3-venv \
+        build-essential unzip tar gzip \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Python tools
+    pip install --break-system-packages uv
+
+    # pip → uv shim: intercept pip/pip3 calls and redirect to uv pip,
+    # which is 10-100x faster.  Agents write "pip install ..." in their
+    # setup.sh and get uv speed transparently.
+    mv /usr/bin/pip3 /usr/bin/pip3-orig 2>/dev/null || true
+    mv /usr/bin/pip  /usr/bin/pip-orig  2>/dev/null || true
+    cat > /usr/local/bin/pip <<'SHIM'
+#!/bin/bash
+# Redirect install/uninstall/freeze to uv pip (10-100x faster).
+# Fall back to real pip for anything uv doesn't support.
+case "${1:-}" in
+    install|uninstall|freeze|list|show|check)
+        exec uv pip "$@" ;;
+    *)
+        exec /usr/bin/pip-orig "$@" ;;
+esac
+SHIM
+    chmod +x /usr/local/bin/pip
+    ln -sf /usr/local/bin/pip /usr/local/bin/pip3
+
+%environment
+    export PATH="/usr/local/bin:$PATH"
+    # Let uv pip install into system Python without --system flag
+    export UV_SYSTEM_PYTHON=1
+    export UV_BREAK_SYSTEM_PACKAGES=1

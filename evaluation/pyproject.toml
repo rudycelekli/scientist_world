@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scientist-world-evaluation"
+version = "0.1.0"
+description = "Evaluation harness for Scientist World environments: runs agent trials, grades them independently and computes Frontier-Normalized Improvement (FNI)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+# The harness also needs the `sciworld` package (the Scientist World CLI,
+# directory cli/ of this repository). It is not on PyPI, so it is not
+# listed here: install it first with `pip install -e ../cli`.
+dependencies = [
+    "flask",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+# Score charts of the dashboard (/api/leaderboard.png).
+charts = ["matplotlib"]
+# dataset_builder: build_dataset, consolidate_batch, push_to_hf.
+dataset = ["datasets", "huggingface_hub"]
+dev = ["pytest"]
+
+[project.scripts]
+sw-eval = "evaluation.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["evaluation*", "dataset_builder*"]
+
+[tool.setuptools.package-data]
+evaluation = ["prompts/*.md", "config.example.yaml"]
+dataset_builder = ["DATASET_CARD.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Makes `evaluation`, `dataset_builder` and idea_impl_eval.py importable
+# when the tests are run from this directory without installing.
+pythonpath = ["."]
+markers = [
+    "slow: clones an environment repository from GitHub through the sciworld CLI (deselect with -m 'not slow')",
+]

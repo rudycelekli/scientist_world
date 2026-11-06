@@ -1,0 +1,19 @@
+# Papers the swarm must not process.
+#
+# Copy this file to excluded_papers.yaml (same directory) to use it.
+# excluded_papers.yaml is gitignored; without it no paper is excluded. This
+# example file itself is never read.
+#
+# Each entry is an arxiv_id the scheduler refuses to submit, continue, or
+# iterate on. Use this for papers that are fundamentally non-reproducible
+# (proprietary systems, unreleased data, subjective human studies with no
+# artifact, etc.) — NOT for papers that merely failed once.
+#
+# Format: list of dicts with arxiv_id, date (when added), reason.
+# Append new entries; never remove unless the decision is reversed.
+# The file is re-read on every request, so edits apply without a restart.
+
+excluded:
+  - arxiv_id: "0000.00000"
+    date: "2026-01-01"
+    reason: "Evaluates a proprietary system on data that is not released. No public code or weights."

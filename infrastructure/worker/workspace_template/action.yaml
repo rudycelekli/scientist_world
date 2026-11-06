@@ -1,0 +1,34 @@
+# End-of-turn action file.
+# Edit this file before your turn ends to signal what the system should do next.
+#
+# Submit a GPU job:
+#   action: submit
+#   gpus: 1
+#   test: false
+#   milestone: method_runs
+#   notes: "First training run to verify the pipeline works end-to-end."
+#
+# Submit a quick test job (short time limit, for validation):
+#   action: submit
+#   gpus: 1
+#   test: true
+#   milestone: method_runs
+#   notes: "Quick smoke test to verify GPU training works."
+#
+# Submit a CPU-only job (gpus: 0, saves GPU budget):
+#   action: submit
+#   gpus: 0
+#   test: false
+#   milestone: method_runs
+#   notes: "Data preprocessing on CPU."
+#
+# Signal that you are done:
+#   action: done
+#   milestone: core_claim
+#   notes: "Reproduced the core claim. Environment packaged."
+
+action: pending
+gpus: 1
+test: false
+milestone: none
+notes: ""

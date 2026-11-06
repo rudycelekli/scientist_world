@@ -1,0 +1,7 @@
+# Runtime state (SWARM_DIR), including per-host variants
+.swarm/
+.swarm_*/
+
+# Local configuration (copy the *.example.yaml files)
+swarm/config/config.yaml
+swarm/config/excluded_papers.yaml

@@ -1,0 +1,20 @@
+# Scout dependencies (Python >= 3.10).
+#
+# The scripts are run by path and use the standard library, except for the
+# packages below. Install only what the stages you run need.
+
+# Prefilters (prefilter_papers.py, categorize_papers.py): client for an
+# OpenAI-compatible chat-completions endpoint.
+openai>=1.0
+
+# PDF-to-Markdown conversion (convert_pdf2md.py): optional, GPU machine only.
+# Install on the machine that runs the conversion:
+#     pip install "mineru[all]>=2.7.6" "transformers<5"
+# The script calls `mineru -p DIR -o DIR` and expects MinerU to write
+# <output>/<id>/<backend>/ folders; check both before using a newer major
+# release. transformers is capped because its 5.x series breaks the Qwen2-VL
+# configuration loaded by MinerU 2.7.
+
+# Structured analysis (analyze_papers.py): no Python package. It runs the
+# Claude Code CLI (`claude`), which must be installed and authenticated
+# separately.

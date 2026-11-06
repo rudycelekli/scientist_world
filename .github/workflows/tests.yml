@@ -1,0 +1,61 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: ${{ matrix.component }}, Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest supported Python and a recent one.
+        python-version: ["3.10", "3.13"]
+        component: [hive, nexus, swarm, worker, evaluation]
+        include:
+          - component: hive
+            install: pip install -e "infrastructure/hive[dev]"
+            run: cd infrastructure/hive && pytest tests -q
+          - component: nexus
+            install: pip install -e "infrastructure/nexus[dev]"
+            run: cd infrastructure/nexus && pytest tests -q
+          - component: swarm
+            install: pip install -e infrastructure/hive -e infrastructure/nexus -e "infrastructure/swarm[test]"
+            run: python -m pytest infrastructure/swarm/tests -q
+          - component: worker
+            install: pip install -e infrastructure/hive -e infrastructure/nexus -e "infrastructure/swarm[test]"
+            run: python -m pytest infrastructure/worker/tests -q
+          - component: evaluation
+            install: pip install -e "evaluation[dev,charts]"
+            run: cd evaluation && pytest tests -q -m "not slow"
+          # The training scripts need Python 3.12; their tests need only pytest.
+          - component: training
+            python-version: "3.13"
+            install: pip install pytest
+            run: cd training && pytest tests -q
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # Two evaluation tests use the CLI, the cli/ submodule. Actions can
+      # fetch it only once both repositories are public; until then those
+      # two tests are skipped.
+      - name: CLI submodule
+        if: ${{ matrix.component == 'evaluation' && !github.event.repository.private }}
+        run: |
+          git submodule update --init cli
+          pip install -e cli
+      - name: Install
+        run: ${{ matrix.install }}
+      - name: Test
+        run: ${{ matrix.run }}

@@ -1,0 +1,20 @@
+# Runtime state: the default NEXUS_DIR and per-deployment variants
+.nexus/
+.nexus_*/
+
+# Local configuration (a copy of nexus/config/config.example.yaml)
+nexus/config/config.yaml
+
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Bookkeeping file written by `nx submit --log-dir`
+.nx_log_dirs.json
+
+# Container images
+*.sif

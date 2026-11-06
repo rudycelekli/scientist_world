@@ -1,0 +1,7 @@
+# Prepared data, exported sets, sampled ideas and run logs written by the scripts.
+out/
+
+# Caches.
+__pycache__/
+*.py[cod]
+.pytest_cache/

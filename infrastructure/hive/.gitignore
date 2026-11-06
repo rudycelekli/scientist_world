@@ -1,0 +1,7 @@
+# local cluster configuration and runtime state
+hive/config/config.yaml
+.hive/
+.hive_*/
+__pycache__/
+*.egg-info/
+.pytest_cache/

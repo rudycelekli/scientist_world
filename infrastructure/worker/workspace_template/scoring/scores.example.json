@@ -1,0 +1,16 @@
+{
+  "experiments": {
+    "imagenet_classification": {
+      "results": {
+        "resnet50":   {"top1_accuracy": 75.8, "top5_accuracy": 92.7, "param_count_M": 25.6},
+        "our_method": {"top1_accuracy": 82.1, "top5_accuracy": 95.0, "param_count_M": 25.6}
+      }
+    },
+    "ablation_key_component": {
+      "results": {
+        "our_method":           {"top1_accuracy": 81.9, "param_count_M": 25.6},
+        "our_method_no_module": {"top1_accuracy": 78.3, "param_count_M": 24.1}
+      }
+    }
+  }
+}

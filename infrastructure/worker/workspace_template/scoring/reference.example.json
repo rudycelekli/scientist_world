@@ -1,0 +1,31 @@
+{
+  "experiments": {
+    "imagenet_classification": {
+      "description": "ImageNet classification — paper's main result (Table 1). Param count is a constraint: method must not add parameters over baseline.",
+      "weight": 0.7,
+      "primary_metric": "top1_accuracy",
+      "metrics": {
+        "top1_accuracy": {"higher_is_better": true, "coefficient": 1.0},
+        "top5_accuracy": {"higher_is_better": true, "coefficient": 0.3},
+        "param_count_M": {"higher_is_better": false, "coefficient": -0.2}
+      },
+      "results": {
+        "resnet50":   {"type": "baseline", "top1_accuracy": 76.1, "top5_accuracy": 92.9, "param_count_M": 25.6},
+        "our_method": {"type": "proposed", "top1_accuracy": 82.3, "top5_accuracy": 95.1, "param_count_M": 25.6}
+      }
+    },
+    "ablation_key_component": {
+      "description": "Ablation: removing the key module should degrade performance (Table 4)",
+      "weight": 0.3,
+      "primary_metric": "top1_accuracy",
+      "metrics": {
+        "top1_accuracy": {"higher_is_better": true, "coefficient": 1.0},
+        "param_count_M": {"higher_is_better": false, "coefficient": -0.2}
+      },
+      "results": {
+        "our_method":           {"type": "proposed", "top1_accuracy": 82.3, "param_count_M": 25.6},
+        "our_method_no_module": {"type": "proposed", "top1_accuracy": 79.1, "param_count_M": 24.1}
+      }
+    }
+  }
+}

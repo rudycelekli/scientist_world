@@ -1,0 +1,111 @@
+{
+    "paper_type": {
+        "type": "metric_method",
+        "justification": "justification"
+    },
+    "novelty_level": {
+        "type": "evolutionary",
+        "justification": "justification"
+    },
+    "taxonomy": {
+        "primary": {
+            "domain": "NLP",
+            "area": "LLM",
+            "category": "Alignment",
+            "method": "DPO"
+        },
+        "secondary": [
+            {
+                "domain": "AI/ML",
+                "area": "LLM",
+                "category": "Post-Training",
+                "method": "SFT"
+            }
+        ]
+    },
+    "compute_requirements": {
+        "training": [
+            {
+                "description": "Fine-tune Llama-2-7B with DPO",
+                "training_type": "fine-tuning",
+                "dataset": "Anthropic HH-RLHF, ~170k pairs",
+                "reported_hardware": "4xA100 80GB",
+                "min_gpu_config": "1xA100 80GB",
+                "est_time_min_config": "8 hours",
+                "est_time_reported_config": "2 hours"
+            }
+        ],
+        "inference": [
+            {
+                "model": "Llama-2-7B",
+                "type": "local",
+                "min_gpu_config": "1xA100 80GB",
+                "est_throughput": "~50 tokens/s"
+            }
+        ]
+    },
+    "paid_resources": {
+        "required": false,
+        "justification": "justification",
+        "api_cost_estimate": "$0",
+        "other_cost_estimate": "$0"
+    },
+    "benchmarks": [
+        "MT-Bench",
+        "AlpacaEval",
+        "TruthfulQA"
+    ],
+    "datasets": {
+        "names": [
+            "HH-RLHF",
+            "OpenAssistant"
+        ],
+        "total_storage": "~15GB"
+    },
+    "baselines": [
+        "PPO",
+        "SFT",
+        "RLHF",
+        "Best-of-N"
+    ],
+    "dependencies": [
+        "Llama 2 (Meta)",
+        "TRL library"
+    ],
+    "code_availability": {
+        "status": "official_complete",
+        "urls": [
+            "https://github.com/example/dpo"
+        ]
+    },
+    "reproduction_scores": {
+        "coding_difficulty": {
+            "score": 5,
+            "justification": "justification"
+        },
+        "compute_difficulty": {
+            "score": 5,
+            "justification": "justification"
+        },
+        "speed_difficulty": {
+            "score": 5,
+            "justification": "justification"
+        },
+        "data_model_difficulty": {
+            "score": 5,
+            "justification": "justification"
+        },
+        "overall": {
+            "score": 5,
+            "justification": "justification"
+        }
+    },
+    "paper_quality": {
+        "score": 5,
+        "justification": "justification"
+    },
+    "problem_novelty": {
+        "score": 5,
+        "justification": "justification"
+    }
+}

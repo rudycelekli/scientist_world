@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexus"
+version = "0.1.0"
+description = "Experiment boundary for Scientist World: per-project GPU-hour budgets, concurrency caps and checkpointed job tracking in front of a Hive compute pool"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+dependencies = [
+    "flask",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[project.scripts]
+nexus = "nexus.cli:main"
+nx = "nexus.agent_cli:main"
+
+[tool.setuptools.packages.find]
+include = ["nexus*"]
+
+[tool.setuptools.package-data]
+nexus = ["config/config.example.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

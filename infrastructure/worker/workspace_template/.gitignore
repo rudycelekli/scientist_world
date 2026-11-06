@@ -1,0 +1,230 @@
+# Large files — do not commit (applies everywhere, including tmp/)
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.parquet
+*.arrow
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.gz
+*.onnx
+*.gguf
+*.msgpack
+*.tflite
+*.pb
+
+# Files too large for git: public fetched data (datasets, weights) and
+# agent-generated data that exceeds git's size limit. Repopulated from
+# scratch by scripts/download.sh. Everything else under data/ IS tracked.
+data/downloads/
+!data/downloads/.gitkeep
+
+# Container artifacts (multi-GB)
+environment/container.sif
+environment/container.squashfs
+environment/overlay*.img
+environment/.setup_wrapper.sh
+environment/.overlay.log
+*.squashfs
+*.sif
+*.img
+
+# Container sandbox / rootfs extracts (agents sometimes build these inside environment/ — 100s of GB)
+.apptainer/
+.apptainer_tmp/
+.apptainer_tools/
+.singularity/
+environment/container_sandbox/
+environment/*sandbox*/
+environment/sandbox*/
+environment/rootfs*/
+environment/*-rootfs*
+environment/*.tar.gz
+environment/*.tar
+environment/*.tar.xz
+
+# Container image layouts (root-level, not under environment/)
+oci_layout/
+oci-image/
+oci-images/
+docker_*/
+docker_*.tar
+docker_*.tar.gz
+docker_*.tar.xz
+*.tar.xz
+**/*.tar.xz
+
+# Swarm/worker artifacts
+trajectory/
+.empty_*/
+.git-shims/
+.eval/
+outputs/
+logs/
+.venv/
+venv/
+env/
+ENV/
+.tox/
+.local/
+shared/
+
+# Credentials and agent CLI state — never commit
+.git-credentials
+.env
+.envrc
+.claude/
+.claude.json
+.codex/
+.kimi/
+.gemini/
+
+# Agent-generated scaffolding files
+codex/
+claude_code/
+AGENTS.md
+CLAUDE.md
+
+# Python package / build directories (agents install under many names)
+.python_packages/
+.cache/
+# Pip cache variants (beyond .cache/)
+.pip_cache/
+.pip-cache/
+pip_cache/
+pip-cache/
+# HuggingFace cache variants (beyond .cache/)
+.hf_cache/
+.hf-cache/
+hf_cache/
+.huggingface/
+huggingface_hub/
+# Extracted package trees (e.g. torch25_extracted/)
+*_extracted/
+**/*_extracted/
+# Nvidia/CUDA lib dumps with underscore variants (beyond nvidia/cu*/)
+nvidia_libs/
+nvidia-libs/
+nvidia_wheels/
+nvidia-wheels/
+all_libs/
+# Wheels directory (beyond *.whl)
+wheels/
+python_wheels/
+pkgs/
+pkgs-*/
+pylib/
+pylib[0-9]*/
+pylibs/
+pylibs_*/
+pypkgs/
+pip_packages/
+pip-packages/
+local_pkgs/
+local-pkgs/
+local_packages*/
+local-packages*/
+local_torch/
+local-torch/
+# Catch-all for agent-invented `*-packages/` install dirs (pyvenv style).
+*-packages/
+# CUDA install trees — always from pip-installed nvidia-* wheels, never
+# agent-authored. Flattens nvidia/cu12/, nvidia/cu13/, etc.
+nvidia/cu*/
+tmp_pip/
+tmp_pkgs/
+tmp_pylib*/
+site-packages/
+*.egg-info/
+node_modules/
+build/
+dist/
+*.whl
+*.so
+*.so.*
+
+# Hidden package variants
+.pylib/
+.pylib[0-9]*/
+.pylibs/
+.deps/
+.packages/
+.local_pkgs/
+
+# Rootfs / container extracts agents sometimes create
+rootfs*/
+*_rootfs/
+**/*_rootfs*
+mcr_cache/
+**/*.tar
+**/*.tar.gz
+**/*.tgz
+
+# Git bundles (often multi-GB)
+*.bundle
+*.bundle.lock
+
+# Experiment tracking
+wandb/
+.wandb/
+mlruns/
+lightning_logs/
+ray_results/
+tb_logs/
+runs/
+events.out.tfevents.*
+catboost_info/
+.aim/
+.neptune/
+
+# Python tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Build artifacts
+*.o
+*.a
+*.pyd
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+
+# IDE / OS junk
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Backup / swap
+*.bak
+*.orig
+*.rej
+
+# Core dumps
+core.*

@@ -1,0 +1,62 @@
+# Hive configuration
+#
+# Copy this file to config.yaml (same directory) and edit it for your cluster.
+# config.yaml is gitignored. A config.yaml placed in $HIVE_DIR takes
+# precedence over this location.
+
+slurm:
+  default_walltime: "12:00:00"        # walltime of a worker job when the resource sets none
+  drain_before_timeout: "0:05:00"     # start draining a worker this long before its walltime
+  # extra_args: "--mail-type=NONE"    # extra sbatch flags added to every worker job
+
+  # One entry per kind of node you want in the pool. The name is what you pass
+  # to `hive start -r <name> <num_jobs>` and to `hive submit -r <name>`.
+  # Each SLURM job provides one node.
+  resources:
+    - name: gpu
+      gpus_per_job: 4                 # GPUs per node (0 for a CPU-only resource)
+      max_jobs: 4                     # number of jobs started by `hive start --full`
+      # partition: gpu                # sbatch --partition (omit for the cluster default)
+      # account: myaccount            # sbatch --account
+      # qos: normal                   # sbatch --qos
+      # constraint: a100              # sbatch --constraint
+      # mem: "64G"                    # sbatch --mem
+      # cpus_per_task: 8              # sbatch --cpus-per-task
+      # walltime: "8:00:00"           # overrides default_walltime for this resource
+      # exclude_nodes: "node01,node02"  # sbatch --exclude
+      # test: false                   # true: skipped by --full, used for short validation jobs
+
+    # More resources, for example a second GPU type, a short test queue and CPU nodes:
+    # - name: gpu-large
+    #   partition: gpu-large
+    #   gpus_per_job: 8
+    #   max_jobs: 2
+    #   mem: "256G"
+    #   cpus_per_task: 32
+    # - name: gpu-test
+    #   gpus_per_job: 1
+    #   max_jobs: 1
+    #   walltime: "1:00:00"
+    #   test: true
+    # - name: cpu
+    #   gpus_per_job: 0
+    #   cpus_per_task: 32
+    #   max_jobs: 2
+
+ray:
+  head_port: 6379                     # Ray head port; pick a free port if the head node is shared
+  dashboard_port: 38581               # Hive dashboard / REST API port; also must be free
+  dashboard_host: "127.0.0.1"         # bind address of the dashboard. It has no authentication
+                                      # and its API runs commands as you: use "0.0.0.0" only on
+                                      # a trusted network.
+  # head_ip: 10.0.0.5                 # address workers use to reach the head (auto-detected if unset)
+  launch_pending_grace_sec: 30        # how long a freshly launched job runner is trusted before a retry
+
+env:
+  # venv_path: /path/to/hive/.venv    # virtualenv activated on compute nodes (must contain hive + ray)
+  # working_dir: /path/to/project     # default working directory of jobs (default: where you submit from)
+  # ray_tmpdir: /path/short/rt        # Ray temp dir on storage that is not cleaned periodically; keep the
+                                      # path short (Unix socket limit). Overridden by $HIVE_RAY_TMPDIR.
+  # setup_commands:                   # shell lines run on each worker node before Ray starts
+  #   - "module load cuda/12.4"
+  #   - "export HTTPS_PROXY=http://proxy.example.org:3128"

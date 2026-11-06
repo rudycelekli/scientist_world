@@ -1,0 +1,207 @@
+# Evaluation harness configuration (template).
+#
+# Copy to config.yaml in this directory (not tracked) and edit. Every key
+# below is optional except the ones marked REQUIRED; the values shown are
+# the built-in defaults unless the comment says "example".
+# Set EVALUATION_DIR=/abs/dir to read <dir>/config.yaml instead.
+
+# ── Concurrency ──────────────────────────────────────────────────────
+# Maximum number of runs in flight at once (bench and dashboard queue).
+max_concurrent: 10
+# Per-profile in-flight cap. Profiles not listed are only limited by
+# max_concurrent. Use it to stay under one provider's rate limits.
+# Example:
+#   profile_concurrency:
+#     my-claude-high: 6
+profile_concurrency: {}
+# Maximum agent turns in the main loop of one run.
+max_turns: 200
+# Retries of a run after a transient agent failure (1 = two attempts).
+max_retries: 1
+
+# ── Normalization cohort (docs/scoring.md) ───────────────────────────
+# The cohort is the set of profiles whose graded runs define each
+# paper's coefficients. Empty profile_cohort = every profile under
+# `profiles`. Names in profile_cohort_exclude are removed from the
+# cohort; their runs are still scored against the coefficients.
+profile_cohort: []
+profile_cohort_exclude: []
+
+# ── Paths ────────────────────────────────────────────────────────────
+# REQUIRED. Root of all run state: envs/<paper>/..., cache/,
+# normalization/. Needs space for workspaces and container images, and
+# must be visible to the compute nodes that run jobs.
+data_dir: "/path/to/evaluation-data"
+# REQUIRED to run agents. The agent container image built by the
+# sciworld CLI (see ../README.md, Requirements).
+agent_sif: "/path/to/agent.sif"
+# Shared cache of built paper containers (<sha256 of container.def>.sif).
+# Dependency overlays are cached next to it in ../setup_overlays.
+# Empty = no cache, every run builds its own.
+container_cache_dir: ""
+# uv cache directory bound into the container while setup.sh runs.
+# Empty = uv's default inside the container.
+uv_cache_dir: ""
+# Local (non-network) scratch directory used while building overlays.
+local_tmp_dir: "/tmp"
+# .gitignore template installed into every run workspace. Empty = the
+# worker template shipped in this repository
+# (infrastructure/worker/workspace_template/.gitignore).
+workspace_gitignore: ""
+
+# ── Agent container limits ───────────────────────────────────────────
+# Memory hard cap of the agent container (cgroup). The agent-facing
+# prompts state 8 GB.
+agent_memory: "8G"
+# BLAS/OpenMP thread cap exported into the agent container.
+agent_cpu_threads: 2
+# nice value of the agent container process.
+agent_nice: 19
+
+# ── Dashboard ────────────────────────────────────────────────────────
+# The dashboard has no authentication and can start runs. It binds the
+# loopback interface by default; set host to "0.0.0.0" only on a
+# trusted network.
+host: "127.0.0.1"
+port: 38582
+# Optional JSON file (path relative to data_dir) holding a list of paper
+# ids. When set, the dashboard only offers and accepts these papers.
+cohort_file: ""
+dashboard:
+  # Named subsets of papers. Each adds a coverage strip and a pair of
+  # score charts restricted to its papers. Example:
+  #   paper_groups:
+  #     core-10: ["2501.00001", "2501.00002"]
+  paper_groups: {}
+  # Profile names shown first (in this order) as matrix columns; other
+  # profiles follow alphabetically.
+  model_order: []
+
+# ── Agent CLI tuning ─────────────────────────────────────────────────
+# Passed to the claude CLI in the agent container as
+# CLAUDE_CODE_MAX_RETRIES, API_TIMEOUT_MS, CLAUDE_CODE_MAX_OUTPUT_TOKENS.
+claude_code_max_retries: 50
+api_timeout_ms: 3000000
+claude_code_max_output_tokens: 64000
+# Model used by the short host-side `claude --print` call that refreshes
+# a Claude OAuth token close to expiry before it is copied into a
+# workspace.
+claude_oauth_refresh_model: "claude-haiku-4-5-20251001"
+# claude-tmux scaffold only (experimental): host path of the claude
+# binary bound over the one in the agent container.
+claude_tmux_binary: ""
+
+# ── Job checkpoints ──────────────────────────────────────────────────
+# Seconds between agent check-ins on a running job, and how long Nexus
+# waits for the agent's continue/cancel decision.
+checkpoint_interval: 1200
+checkpoint_timeout: 1800
+# Time limit in seconds for scripts/download.sh during `warm`.
+warm_download_timeout: 7200
+
+# ── Model profiles ───────────────────────────────────────────────────
+# REQUIRED: at least one. A profile names a (scaffold, model, effort)
+# combination; runs are identified by profile name. Fields:
+#   scaffold             claude-code | codex | kimi | gemini | claude-tmux
+#                        (kimi, gemini and claude-tmux are experimental)
+#   model                model id passed to the agent CLI
+#   effort               reasoning effort passed to the CLI (optional)
+#   compact_token_limit  context size at which the CLI compacts (optional)
+#   env_vars             extra environment variables for the agent
+#                        container, e.g. a gateway endpoint (optional)
+#   api_keys             list of keys used round-robin as
+#                        ANTHROPIC_AUTH_TOKEN and rotated when a usage
+#                        limit is reported (optional)
+#   actual_model         real model id when `model` is an alias; used for
+#                        the dataset `model` column (optional)
+#   publish_as           external identity used for branch names and
+#                        cohort accounting when several profiles serve
+#                        the same model (optional)
+#   idle_timeout_sec     per-turn inactivity kill, default 1800 (optional)
+# The examples below are placeholders; replace the model ids, URL and
+# token with your own.
+profiles: {}
+# profiles:
+#   my-claude-high:
+#     scaffold: "claude-code"
+#     model: "<anthropic-model-id>"
+#     effort: "high"
+#     compact_token_limit: 400000
+#   my-codex-medium:
+#     scaffold: "codex"
+#     model: "<openai-model-id>"
+#     effort: "medium"
+#     compact_token_limit: 400000
+#   # A model served through an Anthropic-compatible gateway, driven by
+#   # the claude CLI under the "opus" alias.
+#   my-gateway-high:
+#     scaffold: "claude-code"
+#     model: "opus"
+#     actual_model: "<gateway-model-id>"
+#     effort: "high"
+#     compact_token_limit: 180000
+#     idle_timeout_sec: 3600
+#     env_vars:
+#       ANTHROPIC_BASE_URL: "https://gateway.example.com/anthropic"
+#       ANTHROPIC_AUTH_TOKEN: "<gateway-api-key>"
+#       ANTHROPIC_MODEL: "<gateway-model-id>"
+#       ANTHROPIC_DEFAULT_OPUS_MODEL: "<gateway-model-id>"
+#       ANTHROPIC_DEFAULT_SONNET_MODEL: "<gateway-model-id>"
+#       ANTHROPIC_DEFAULT_HAIKU_MODEL: "<gateway-model-id>"
+#       CLAUDE_CODE_SUBAGENT_MODEL: "<gateway-model-id>"
+#     api_keys:
+#       - "<gateway-api-key>"
+#       - "<second-gateway-api-key>"
+#   # A grader profile for the verification phase.
+#   my-codex-medium-grader:
+#     scaffold: "codex"
+#     model: "<openai-model-id>"
+#     effort: "medium"
+
+# ── Nexus / compute ──────────────────────────────────────────────────
+nexus:
+  # URL of the Nexus daemon (Nexus listens on port 39000 by default).
+  url: "http://localhost:39000"
+  # GPU-hour budget of one run, and the per-job GPU cap.
+  gpu_budget_hours: 30.0
+  max_gpus: 2
+  # REQUIRED: Hive resource names per job category (example values).
+  # They must match the resource names in the configuration of the Hive
+  # pool behind Nexus. gpu and gpu_test must be non-empty; gpu_test (used
+  # when the agent sets `test: true`) may repeat the gpu list. The run's
+  # Nexus project is allowed the union of all four groups.
+  resources:
+    gpu:      [gpu]
+    gpu_test: [gpu-test]
+    cpu:      [cpu]
+    cpu_test: [cpu-test]
+
+# ── Independent verification phase (verifier.py) ─────────────────────
+# When enabled, every completed run is re-scored by a fresh grader
+# session that re-runs the frozen method, regenerates predictions,
+# grades them with the pristine evaluators and writes
+# scoring/verification.json. Only graded runs enter normalization, and
+# the held-out (test) score comes from the grader. Standalone:
+#   python -m evaluation.verifier <paper_id> <profile> <mode>
+verifier:
+  enabled: false
+  # REQUIRED when enabled: name of a profile under `profiles`.
+  grader_profile: ""
+  # Turn and GPU-hour budget of one grader session, and how many times a
+  # crashed grader session is relaunched.
+  max_turns: 12
+  gpu_budget_hours: 8.0
+  max_relaunches: 2
+  # Push the graded state to branch <mode>-<profile>-grader (only when
+  # publishing is enabled below).
+  publish: true
+
+# ── Publishing to GitHub (git_publish.py) ────────────────────────────
+# Off by default. When enabled, every completed run is pushed to branch
+# <mode>-<profile> of the paper's repository <github_org>/<arxiv_id>-...,
+# and locked normalization coefficients to branch `normalization`.
+# Needs a token with write access as the first github.com entry of
+# ~/.git-credentials. main/master are never written.
+publish:
+  enabled: false
+  github_org: ""

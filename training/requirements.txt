@@ -1,0 +1,12 @@
+# Python 3.12 or newer (required by the pinned numpy; the code was last run
+# on Python 3.12).
+#
+# These are the versions the code was last run with. The trainers rely on
+# defaults of tinker_cookbook (see README.md, "Version sensitivity"), so
+# change the pins deliberately.
+tinker==0.27.2
+tinker_cookbook==0.5.7
+datasets==5.0.1
+numpy==2.5.3
+
+# The tests (python -m pytest tests) need only pytest, none of the above.

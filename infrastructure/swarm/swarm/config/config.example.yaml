@@ -1,0 +1,300 @@
+# Swarm configuration
+#
+# Copy this file to config.yaml (same directory) and edit it. config.yaml is
+# gitignored. A config.yaml placed in $SWARM_DIR (default:
+# infrastructure/swarm/.swarm/) takes precedence over this location.
+#
+# The values below reproduce the setup used to build the environments in the
+# paper, with machine-specific paths and names replaced by placeholders.
+# Lines marked REQUIRED must be edited before `swarm start` will run.
+
+# ── Concurrency ──────────────────────────────────────────────────────
+# A paper being built is in one of these states: idle (taken from the queue,
+# before its first agent turn), working (an agent turn is running), building
+# (container build), installing (setup.sh), waiting (a compute job is
+# running). Each cap below limits one state; `swarm cap` changes them at run
+# time. Papers in the waiting state are limited only by pool_size.
+
+# Total number of papers being built at once. When set, it overrides the sum
+# of the caps below.
+pool_size: 10
+
+# Agent turns running at once.
+max_working_workers: 8
+
+# Extra working slots usable only by papers that return from a job, a build
+# or an install. A paper starting its first turn cannot take them.
+max_working_return_overflow: 8
+
+# Papers taken from the queue that have not started their first agent turn.
+max_admitted_workers: 3
+
+# Concurrent container builds (`apptainer build`).
+max_building_workers: 4
+
+# Concurrent setup.sh runs (package installs into the overlay).
+max_installing_workers: 12
+
+# Shared cap for idle + waiting + building + installing papers. It applies
+# only when none of max_admitted_workers, max_building_workers and
+# max_installing_workers is set; with those three set (as above) it is unused.
+# max_runtime_workers: 50
+
+# ── Paths ────────────────────────────────────────────────────────────
+# REQUIRED. Scout data directory. Swarm reads
+# arxiv_mds/<id>/<id>.md (required), arxiv_mds/<id>/images/,
+# arxiv_pdfs/<id>.pdf and paper_index.json from it. Falls back to
+# $SCOUT_DATA_DIR when empty.
+scout_data_dir: "/path/to/scout/data"
+
+# REQUIRED. Directory in which one workspace per paper is created
+# (<workspace_base_dir>/<arxiv_id>/). Must be visible to compute nodes.
+workspace_base_dir: "/path/to/workspaces"
+
+# Datasets and model weights shared by all papers. Mounted read-only in
+# agent, setup and job containers at /home/user/shared/datasets and
+# /home/user/shared/models.
+shared_datasets_path: "/path/to/shared/datasets"
+shared_models_path: "/path/to/shared/models"
+
+# HuggingFace cache shared by all papers. Passed to Nexus, which mounts it in
+# job containers. Empty = no shared cache.
+hf_cache_path: "/path/to/shared/hf_cache"
+
+# Cache of built containers, keyed by the hash of container.def, plus cached
+# base images in base_sifs/. A sibling directory setup_overlays/ caches
+# setup.sh results. Empty = <workspace_base_dir>/../shared/containers.
+# Nothing is ever evicted from these caches.
+container_cache_dir: "/path/to/shared/containers"
+
+# uv package cache shared by agent and setup containers. Empty = $UV_CACHE_DIR,
+# else ~/.cache/uv, for setup.sh; no shared cache in agent containers.
+uv_cache_dir: "/path/to/shared/uv_cache"
+
+# Exported as APPTAINER_CACHEDIR for every apptainer call. Empty = Apptainer's
+# default, ~/.apptainer, which fills up quickly on hosts with a small home.
+apptainer_cache_dir: "/path/to/shared/apptainer_cache"
+
+# Node-local directory for copies of the agent container, container builds
+# (APPTAINER_TMPDIR) and overlays under construction. It must exist; Swarm does
+# not create it. <local_tmp_dir>/swarm_overlays is deleted every time the
+# daemon starts.
+local_tmp_dir: "/tmp"
+
+# ── Agent container limits ───────────────────────────────────────────
+# Agent containers run on the host that runs the daemon.
+# Memory limit per agent container (apptainer exec --memory). Requires
+# cgroups v2 with memory delegation for your user.
+container_memory_limit: "8G"
+
+# Scheduling priority of agent containers (nice -n).
+container_nice: 19
+
+# Thread cap inside agent containers (OMP_NUM_THREADS, MKL_NUM_THREADS, ...).
+container_cpu_threads: 2
+
+# ── Dashboard ────────────────────────────────────────────────────────
+# Interface and port of the dashboard and REST API. The API has no
+# authentication: anyone who can reach it can submit, cancel and pause
+# papers, which run agents with your credentials. Use "0.0.0.0" only on a
+# trusted network. The swarm CLI talks to http://localhost:<dashboard_port>.
+dashboard_host: "127.0.0.1"
+dashboard_port: 39100
+
+# ── GitHub ───────────────────────────────────────────────────────────
+# REQUIRED in practice. GitHub organisation (not a user account) in which one
+# private repository per paper is created. The token is read from
+# ~/.git-credentials (https://<user>:<token>@github.com) and needs permission
+# to create repositories in the organisation. If github_org or the token is
+# missing, the daemon starts with a warning and every iteration ends with
+# status "stalled"; see the README.
+github_org: "your-github-org"
+
+# ── Milestones ───────────────────────────────────────────────────────
+# Milestone ladder: none < method_runs < core_claim < core_claim_plus <
+# secondary_claims < majority < near_complete < full (not_possible ranks
+# lowest).
+# When an agent stops below target_milestone it is asked to keep going, at
+# most push_forward_attempts times. A paper that fails with an error at or
+# above target_milestone still gets a wrap-up turn.
+target_milestone: "core_claim"
+push_forward_attempts: 1
+
+# ── Profiles ─────────────────────────────────────────────────────────
+# A profile names an agent: scaffold + model + settings. Workflow steps,
+# `worker.profile` and the --profile options refer to profiles by name.
+# Keys:
+#   scaffold             "codex" or "claude-code"
+#   model                value for the CLI's --model option
+#   effort               codex: model_reasoning_effort; claude-code:
+#                        CLAUDE_CODE_EFFORT_LEVEL (optional)
+#   actual_model         model name written to manifests and git identity when
+#                        `model` is only an alias understood by a gateway
+#   env_vars             extra environment variables for the agent process
+#   api_keys             list of keys, starting with the one in env_vars; on a
+#                        hard usage-limit error the next key replaces
+#                        env_vars.ANTHROPIC_AUTH_TOKEN and the turn is retried
+#                        (for claude-code profiles that use a gateway)
+#   compact_token_limit  context size in tokens at which the CLI compacts the
+#                        conversation (codex default: 120000; claude-code
+#                        default: decided by the CLI)
+#   max_turns            agentic turns per invocation (claude-code only:
+#                        --max-turns)
+#   container_sif        agent container for this profile (default:
+#                        worker.container_sif)
+# The model ids are examples; use models your accounts can access.
+profiles:
+  codex-low:
+    scaffold: "codex"
+    model: "gpt-5.4"
+    effort: "low"
+  codex-medium:
+    scaffold: "codex"
+    model: "gpt-5.4"
+    effort: "medium"
+  codex-high:
+    scaffold: "codex"
+    model: "gpt-5.4"
+    effort: "high"
+  claude-code-high:
+    scaffold: "claude-code"
+    model: "claude-opus-4-6"
+    effort: "high"
+  # A model served through an Anthropic-compatible gateway, driven by the
+  # Claude Code CLI:
+  # gateway-high:
+  #   scaffold: "claude-code"
+  #   model: "opus"                      # alias the CLI accepts
+  #   actual_model: "<provider-model-name>"
+  #   effort: "high"
+  #   compact_token_limit: 120000
+  #   env_vars:
+  #     ANTHROPIC_BASE_URL: "https://gateway.example.com/anthropic"
+  #     ANTHROPIC_AUTH_TOKEN: "<your-gateway-key>"
+  #     ANTHROPIC_DEFAULT_OPUS_MODEL: "<provider-model-name>"
+  #   api_keys:
+  #     - "<your-gateway-key>"
+  #     - "<your-second-gateway-key>"
+
+# ── Worker ───────────────────────────────────────────────────────────
+# Defaults for every agent. A profile overrides scaffold, model and the other
+# profile keys; any profile key may also be set here to override the default
+# profile.
+worker:
+  # Profile used when a paper has neither a workflow nor --profile.
+  profile: "codex-medium"
+  # REQUIRED for isolation. Agent container, built with
+  #   apptainer build reproducer.sif infrastructure/worker/container/reproducer.def
+  # Without it agents run directly on the host with your privileges.
+  container_sif: "/path/to/reproducer.sif"
+  # Agentic turns per agent invocation (claude-code only).
+  max_turns: 200
+  # Seconds allowed for one setup.sh run.
+  setup_timeout: 1200
+
+# ── Workflows ────────────────────────────────────────────────────────
+# A workflow is the sequence of builder passes ("iterations") a paper goes
+# through. Step keys:
+#   profile              REQUIRED. Agent for this step.
+#   role                 reproducer (default), designer_stage_1,
+#                        designer_stage_2, designer_stage_3, packager,
+#                        verifier, or designer (single-stage designer).
+#   gpu_budget_hours     GPU-hour budget of this iteration (default:
+#                        nexus.gpu_budget_hours). Budgets do not carry over.
+#   milestone_cap        End the iteration as soon as this milestone is
+#                        reached. "full" (default) = no cap.
+#   min_milestone        Gate checked when the iteration ends: below this
+#                        milestone the workflow reverts or stops.
+#   revert_to_iteration  1-indexed iteration to re-run when the gate fails
+#                        (needs min_milestone; must not be later than this
+#                        step). Without it the paper ends "unsuccessful".
+#   fallback_profiles    Profiles tried in order when the step's profile
+#                        reports a hard API usage limit.
+# max_revert_attempts is the number of reverts a paper may use in total;
+# after that a failed gate ends the paper as "unsuccessful".
+# A workflow may also be written as a bare list of steps (no reverts).
+
+# Workflow used by `swarm submit` when --workflow is not given. Set to "" to
+# submit papers without a workflow (one reproducer pass with worker.profile).
+default_workflow: "standard"
+
+workflows:
+  # The nine-iteration build workflow used in the paper.
+  standard:
+    max_revert_attempts: 2
+    steps:
+      # 1-3: reproducer passes. Each later pass audits the previous one.
+      - profile: "codex-medium"
+        gpu_budget_hours: 30
+        milestone_cap: "full"
+        min_milestone: "core_claim"
+        revert_to_iteration: 1
+      - profile: "codex-low"
+        gpu_budget_hours: 15
+        milestone_cap: "full"
+        min_milestone: "core_claim"
+        revert_to_iteration: 1
+      - profile: "codex-high"
+        gpu_budget_hours: 10
+        milestone_cap: "full"
+        min_milestone: "core_claim"
+        revert_to_iteration: 2
+      # 4-6: designer. Stage 1 writes the train/test evaluation split, stage 2
+      # reviews it, stage 3 runs it. Stages 1 and 2 submit no jobs.
+      - profile: "codex-high"
+        gpu_budget_hours: 1
+        role: "designer_stage_1"
+      - profile: "codex-medium"
+        gpu_budget_hours: 1
+        role: "designer_stage_2"
+      - profile: "codex-high"
+        gpu_budget_hours: 5
+        role: "designer_stage_3"
+        min_milestone: "core_claim"
+        revert_to_iteration: 1
+      # 7: packager.
+      - profile: "codex-high"
+        gpu_budget_hours: 1
+        role: "packager"
+      # 8-9: verifier passes.
+      - profile: "codex-medium"
+        gpu_budget_hours: 3
+        role: "verifier"
+        min_milestone: "core_claim"
+        revert_to_iteration: 1
+      - profile: "codex-high"
+        gpu_budget_hours: 3
+        role: "verifier"
+        min_milestone: "core_claim"
+        revert_to_iteration: 2
+
+# ── Nexus ────────────────────────────────────────────────────────────
+# Swarm submits every compute job through Nexus, which enforces the budget
+# and forwards the job to Hive.
+nexus:
+  # REQUIRED. URL of the Nexus daemon (39000 is Nexus's default port). Falls
+  # back to $NEXUS_URL when empty. If nothing answers at this URL when Swarm
+  # starts, Swarm starts a Nexus daemon itself; see the README.
+  url: "http://localhost:39000"
+  # Interface a Nexus daemon started by Swarm binds to. The Nexus API has no
+  # authentication; use "0.0.0.0" only on a trusted network.
+  autostart_host: "127.0.0.1"
+  # GPU-hour budget of an iteration whose workflow step sets none, and of
+  # papers without a workflow.
+  gpu_budget_hours: 50.0
+  # Most GPUs one job may request.
+  max_gpus: 2
+  # Per-job time limit shown to the agent. It is not enforced by Swarm: the
+  # limits that apply are Nexus's project_defaults.default_job_timeout and
+  # the walltime of the Hive resource. Keep the three consistent.
+  job_time_limit: "24:00:00"
+  # REQUIRED. Hive resource names by job type. The agent chooses the number
+  # of GPUs (0 = CPU job) and whether the job is a short test; Swarm passes
+  # every name of the matching list to Nexus. The agent prompts state that
+  # test jobs are limited to one hour, so give the *_test resources a
+  # one-hour walltime in Hive.
+  resources:
+    gpu: ["gpu"]
+    gpu_test: ["gpu-test"]
+    cpu: ["cpu"]
+    cpu_test: ["cpu-test"]

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hive"
+version = "0.1.0"
+description = "Hive: an interactive compute pool on SLURM and Ray for agent-driven experiments"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "ray[default]>=2.40",
+    "pyyaml",
+    "flask",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+hive = "hive.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hive*"]
+
+[tool.setuptools.package-data]
+hive = ["config/config.example.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
